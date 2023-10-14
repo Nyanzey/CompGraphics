@@ -1,0 +1,2 @@
+# CompGraphics
+Computer graphics course
