@@ -178,7 +178,7 @@ public:
         matrix.set_T(vec);
 
         mat4 matrixT;
-        INV(matrix, matrixT);
+        inverse(matrix, matrixT);
 
         apply_mat(center, matrixT);
         for (int i = 0; i < vtx.size(); i++)
@@ -193,7 +193,7 @@ public:
         matrix.set_S(sx / last_scale.x, sy / last_scale.y, sz / last_scale.z);
 
         mat4 matrixS;
-        INV(matrix, matrixS);
+        inverse(matrix, matrixS);
 
         last_scale.update(sx, sy, sz, 1.0f);
 
@@ -229,7 +229,7 @@ public:
         }
 
         mat4 matrixR;
-        INV(matrix, matrixR);
+        inverse(matrix, matrixR);
 
         mat4 matrixT;
         matrixT.set_T(vec4(center.x, center.y, 0.0f, 1.0f));

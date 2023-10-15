@@ -4,45 +4,8 @@
 
 #define PI 3.14159265
 
-class vec3
-{
-public:
-	float x, y, z;
-
-	vec3() {}
-
-	vec3(float _x, float _y, float _z)
-	{
-		this->x = _x;
-		this->y = _y;
-		this->z = _z;
-	}
-
-	void update(float _x, float _y, float _z)
-	{
-		this->x = _x;
-		this->y = _y;
-		this->z = _z;
-	}
-
-	vec3 operator+(const vec3& a)
-	{
-		vec3 res(this->x + a.x, this->y + a.y, this->z + a.z);
-		return res;
-	}
-
-	void operator=(const vec3& a)
-	{
-		this->x = a.x;
-		this->y = a.y;
-		this->z = a.z;
-	}
-
-	float dot(vec3 vec)
-	{
-		return x * vec.x + y * vec.y + z * vec.z;
-	}
-};
+class mat4;
+bool inverse(mat4 M, mat4& inv);
 
 class vec4
 {
@@ -78,26 +41,31 @@ public:
 
 	vec4 operator+(const vec4& a)
 	{
-		vec4 res(this->x + a.x, this->y + a.y, this->z + a.z, this->w + a.w);
+		vec4 res(this->x + a.x, this->y + a.y, this->z + a.z, this->w);
 		return res;
 	}
 
 	vec4 operator-(const vec4& a)
 	{
-		vec4 res(this->x - a.x, this->y - a.y, this->z - a.z, this->w - a.w);
+		vec4 res(this->x - a.x, this->y - a.y, this->z - a.z, this->w);
 		return res;
 	}
 
 	vec4 operator/(float val)
 	{
-		vec4 res(this-> x / val, this->y / val, this->z / val, this->w / val);
+		vec4 res(this-> x / val, this->y / val, this->z / val, this->w);
 		return res;
 	}
 
 	vec4 operator*(float val)
 	{
-		vec4 res(this->x * val, this->y * val, this->z * val, this->w * val);
+		vec4 res(this->x * val, this->y * val, this->z * val, this->w);
 		return res;
+	}
+
+	float operator*(const vec4& a)
+	{
+		return x * a.x + y * a.y + z * a.z + w * a.w;
 	}
 
 	void operator=(const vec4& a)
@@ -108,11 +76,6 @@ public:
 		this->w = a.w;
 	}
 
-	float dot(vec4 vec)
-	{
-		return x * vec.x + y * vec.y + z * vec.z + w * vec.w;
-	}
-
 	vec4 cross_product(vec4 vec)
 	{
 		return vec4(
@@ -121,65 +84,16 @@ public:
 			(x * vec.y) - (y * vec.x), 1.0f);
 	}
 
+	float get_norm()
+	{
+		return sqrt(x * x + y * y + z * z);
+	}
+
 	void print()
 	{
 		std::cout << "(" << x << " " << y << " " << z << " " << w << ")" << std::endl;
 	}
 
-};
-
-class mat3
-{
-public:
-
-	vec3 mat[3];
-
-	//Note: each vector represents a COLUMN of the matrix NOT ROWS
-	void set_R(float angle)
-	{
-		mat[0].x = cos(angle * (PI / 180.0));
-		mat[0].y = sin(angle * (PI / 180.0));
-		mat[0].z = 0;
-
-		mat[1].x = -sin(angle * (PI / 180.0));
-		mat[1].y = cos(angle * (PI / 180.0));
-		mat[1].z = 0;
-
-		mat[2].x = 0;
-		mat[2].y = 0;
-		mat[2].z = 1;
-	}
-
-	//Note: each vector represents a ROW of the matrix NOT COLUMNS (different for this because its matrix*v not v*matrix)
-	void set_T(vec3 vec)
-	{
-		mat[0].x = 1;
-		mat[0].y = 0;
-		mat[0].z = vec.x;
-
-		mat[1].x = 0;
-		mat[1].y = 1;
-		mat[1].z = vec.y;
-
-		mat[2].x = 0;
-		mat[2].y = 0;
-		mat[2].z = 1;
-	}
-
-	void set_S(float scalar)
-	{
-		mat[0].x = scalar;
-		mat[0].y = 0;
-		mat[0].z = 0;
-
-		mat[1].x = 0;
-		mat[1].y = scalar;
-		mat[1].z = 0;
-
-		mat[2].x = 0;
-		mat[2].y = 0;
-		mat[2].z = 1;
-	}
 };
 
 class mat4
@@ -353,24 +267,42 @@ public:
 		return raw_to_mat(res_raw);
 	}
 
+	mat4 operator*(const mat4& M)
+	{
+		return this->multiply(M);
+	}
+
+	void operator=(const mat4& M)
+	{
+		mat[0] = M.mat[0];
+		mat[1] = M.mat[1];
+		mat[2] = M.mat[2];
+		mat[3] = M.mat[3];
+	}
+
+	mat4 inv()
+	{
+		mat4 res;
+		inverse(*this, res);
+
+		return res;
+	}
+
 };
 
 void apply_mat(vec4& vec, mat4& matrix)
 {
 	vec4 res;
 
-	res.x = vec.dot(matrix.mat[0]);
-	res.y = vec.dot(matrix.mat[1]);
-	res.z = vec.dot(matrix.mat[2]);
-	res.w = vec.dot(matrix.mat[3]);
+	res.x = vec * matrix.mat[0];
+	res.y = vec * matrix.mat[1];
+	res.z = vec * matrix.mat[2];
+	res.w = vec * matrix.mat[3];
 
 	vec = res;
 }
 
-vec4 scalar_mul(vec4 vec, float val)
-{
-	return vec4(vec.x * val, vec.y * val, vec.z * val, vec.w * val);
-}
+//Matrix operations
 
 void getCfactor(mat4 &M, mat4& t, int p, int q, int n)
 {
@@ -397,7 +329,7 @@ void getCfactor(mat4 &M, mat4& t, int p, int q, int n)
 	t = t.raw_to_mat(buft);
 }
 
-float DET(mat4 M, int n)
+float det(mat4 M, int n)
 {
 	float D = 0;
 	if (n == 1)
@@ -413,13 +345,13 @@ float DET(mat4 M, int n)
 	int s = 1; 
 	for (int f = 0; f < n; f++) {
 		getCfactor(M, t, 0, f, n);
-		D += s * bufM[0][f] * DET(t, n - 1);
+		D += s * bufM[0][f] * det(t, n - 1);
 		s = -s;
 	}
 	return D;
 }
 
-void ADJ(mat4 M, mat4 &adj)
+void adj(mat4 M, mat4 &adj)
 {
 	int s = 1;
 
@@ -434,30 +366,30 @@ void ADJ(mat4 M, mat4 &adj)
 		{
 			getCfactor(M, t, i, j, 4);
 			s = ((i + j) % 2 == 0) ? 1 : -1;
-			bufAdj[j][i] = (s) * (DET(t, 4 - 1));
+			bufAdj[j][i] = (s) * (det(t, 4 - 1));
 		}
 	}
 
 	adj = adj.raw_to_mat(bufAdj);
 }
 
-bool INV(mat4 M, mat4 &inv)
+bool inverse(mat4 M, mat4 &inv)
 {
-	float det = DET(M, 4);
-	if (det == 0)
+	float determinant = det(M, 4);
+	if (determinant == 0)
 	{
 		std::cout << "can't find its inverse";
 		return false;
 	}
 
-	mat4 adj;
-	adj.fill(0);
-	ADJ(M, adj);
+	mat4 adjunt;
+	adjunt.fill(0);
+	adj(M, adjunt);
 
 	std::vector<std::vector<float>> bufInv = inv.mat_to_raw();
-	std::vector<std::vector<float>> bufAdj = adj.mat_to_raw();
+	std::vector<std::vector<float>> bufAdj = adjunt.mat_to_raw();
 
-	for (int i = 0; i < 4; i++) for (int j = 0; j < 4; j++) bufInv[i][j] = bufAdj[i][j] / float(det);
+	for (int i = 0; i < 4; i++) for (int j = 0; j < 4; j++) bufInv[i][j] = bufAdj[i][j] / float(determinant);
 
 	inv = inv.raw_to_mat(bufInv);
 
