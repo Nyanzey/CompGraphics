@@ -25,7 +25,7 @@ public:
         idx = _idx;
 
         center = vec4(Xoffset, Yoffset, Zoffset, 1.0f);
-        last_scale = vec4(1.0f, 1.0f, 1.0f, 1.0f);
+        last_scale = vec4(2.0f, 1.0f, 1.0f, 1.0f);
     }
 
     vec4 get_middle()
